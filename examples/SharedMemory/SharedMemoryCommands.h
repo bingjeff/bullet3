@@ -35,7 +35,7 @@
 #define MAX_NUM_LINKS MAX_DEGREE_OF_FREEDOM
 #define MAX_SDF_BODIES 500
 
-struct TmpFloat3 
+struct TmpFloat3
 {
     float m_x;
     float m_y;
@@ -47,7 +47,7 @@ __inline
 #else
 inline
 #endif
-TmpFloat3 CreateTmpFloat3(float x, float y, float z) 
+TmpFloat3 CreateTmpFloat3(float x, float y, float z)
 {
     TmpFloat3 tmp;
     tmp.m_x = x;
@@ -74,6 +74,7 @@ enum EnumUrdfArgsUpdateFlags
 	URDF_ARGS_INITIAL_ORIENTATION=4,
 	URDF_ARGS_USE_MULTIBODY=8,
 	URDF_ARGS_USE_FIXED_BASE=16,
+    URDF_ARGS_CONVERSION_FLAGS=32,
 };
 
 
@@ -84,6 +85,7 @@ struct UrdfArgs
 	double m_initialOrientation[4];
 	int m_useMultiBody;
 	int m_useFixedBase;
+    int m_conversion_flags;
 };
 
 
@@ -141,7 +143,7 @@ enum EnumRequestPixelDataUpdateFlags
 	REQUEST_PIXEL_ARGS_HAS_CAMERA_MATRICES=1,
 	REQUEST_PIXEL_ARGS_SET_PIXEL_WIDTH_HEIGHT=4,
 	//don't exceed (1<<15), because this enum is shared with EnumRenderer in SharedMemoryPublic.h
-	
+
 };
 
 struct RequestContactDataArgs
@@ -188,22 +190,22 @@ struct SendDesiredStateArgs
 	double m_Kd[MAX_DEGREE_OF_FREEDOM];//indexed by degree of freedom, 6 for base, and then the dofs for each link
 
     int m_hasDesiredStateFlags[MAX_DEGREE_OF_FREEDOM];
-    
+
 	//desired state is only written by the client, read-only access by server is expected
 
-	//m_desiredStateQ is indexed by position variables, 
+	//m_desiredStateQ is indexed by position variables,
 	//starting with 3 base position variables, 4 base orientation variables (quaternion), then link position variables
     double m_desiredStateQ[MAX_DEGREE_OF_FREEDOM];
-    
+
 
 	//m_desiredStateQdot is index by velocity degrees of freedom, 3 linear and 3 angular variables for the base and then link velocity variables
     double m_desiredStateQdot[MAX_DEGREE_OF_FREEDOM];
-	
+
 	//m_desiredStateForceTorque is either the actual applied force/torque (in CONTROL_MODE_TORQUE) or
 	//or the maximum applied force/torque for the PD/motor/constraint to reach the desired velocity in CONTROL_MODE_VELOCITY and CONTROL_MODE_POSITION_VELOCITY_PD mode
 	//indexed by degree of freedom, 6 dof base, and then dofs for each link
     double m_desiredStateForceTorque[MAX_DEGREE_OF_FREEDOM];
-    
+
 };
 
 enum EnumSimDesiredStateUpdateFlags
@@ -220,7 +222,7 @@ enum EnumSimParamUpdateFlags
 {
 	SIM_PARAM_UPDATE_DELTA_TIME=1,
 	SIM_PARAM_UPDATE_GRAVITY=2,
-	SIM_PARAM_UPDATE_NUM_SOLVER_ITERATIONS=4,	
+	SIM_PARAM_UPDATE_NUM_SOLVER_ITERATIONS=4,
 	SIM_PARAM_UPDATE_NUM_SIMULATION_SUB_STEPS=8,
 	SIM_PARAM_UPDATE_REAL_TIME_SIMULATION = 16,
 	SIM_PARAM_UPDATE_DEFAULT_CONTACT_ERP=32
@@ -253,7 +255,7 @@ struct SendActualStateArgs
 	int m_numDegreeOfFreedomU;
 
     double m_rootLocalInertialFrame[7];
-    
+
 	  //actual state is only written by the server, read-only access by client is expected
     double m_actualStateQ[MAX_DEGREE_OF_FREEDOM];
     double m_actualStateQdot[MAX_DEGREE_OF_FREEDOM];
@@ -262,7 +264,7 @@ struct SendActualStateArgs
     double m_jointReactionForces[6*MAX_DEGREE_OF_FREEDOM];
 
     double m_jointMotorForce[MAX_DEGREE_OF_FREEDOM];
-    
+
     double m_linkState[7*MAX_NUM_LINKS];
     double m_linkLocalInertialFrames[7*MAX_NUM_LINKS];
 };
@@ -278,14 +280,14 @@ struct CreateSensorArgs
     int m_bodyUniqueId;
     int m_numJointSensorChanges;
     int m_sensorType[MAX_DEGREE_OF_FREEDOM];
-    
+
 ///todo: clean up the duplication, make sure no-one else is using those members directly (use C-API header instead)
     int m_jointIndex[MAX_DEGREE_OF_FREEDOM];
     int m_enableJointForceSensor[MAX_DEGREE_OF_FREEDOM];
 
     int m_linkIndex[MAX_DEGREE_OF_FREEDOM];
     int m_enableSensor[MAX_DEGREE_OF_FREEDOM];
-    
+
 };
 
 typedef  struct SharedMemoryCommand SharedMemoryCommand_t;
@@ -318,10 +320,10 @@ struct SdfLoadedArgs
 {
     int m_numBodies;
     int m_bodyUniqueIds[MAX_SDF_BODIES];
-    
+
     ///@todo(erwincoumans) load cameras, lights etc
-    //int m_numCameras; 
-    //int m_numLights; 
+    //int m_numCameras;
+    //int m_numLights;
 };
 
 
@@ -407,7 +409,7 @@ struct SharedMemoryCommand
 	int m_type;
 	smUint64_t	m_timeStamp;
 	int	m_sequenceNumber;
-	
+
 	//m_updateFlags is a bit fields to tell which parameters need updating
     //for example m_updateFlags = SIM_PARAM_UPDATE_DELTA_TIME | SIM_PARAM_UPDATE_NUM_SOLVER_ITERATIONS;
     int m_updateFlags;
@@ -437,7 +439,7 @@ struct SharedMemoryCommand
 
 struct RigidBodyCreateArgs
 {
-	int m_bodyUniqueId; 
+	int m_bodyUniqueId;
 };
 
 struct SendContactDataArgs
@@ -450,10 +452,10 @@ struct SendContactDataArgs
 struct SharedMemoryStatus
 {
 	int m_type;
-	
+
 	smUint64_t	m_timeStamp;
 	int	m_sequenceNumber;
-	
+
 	union
 	{
 		struct BulletDataStreamArgs	m_dataStreamArguments;

@@ -159,6 +159,10 @@ static PyObject* pybullet_loadURDF(PyObject* self, PyObject* args) {
     b3LoadUrdfCommandSetStartPosition(command, startPosX, startPosY, startPosZ);
     b3LoadUrdfCommandSetStartOrientation(command, startOrnX, startOrnY,
                                          startOrnZ, startOrnW);
+    // TODO: Include enum for ConvertURDFFlags
+    int cufUseUrdfInertia = 2;
+    // TODO: Allow the ability to pass in the various conversion flags
+    b3LoadUrdfCommandSetLoaderFlags(command, cufUseUrdfInertia);
     statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
     statusType = b3GetStatusType(statusHandle);
     if (statusType != CMD_URDF_LOADING_COMPLETED) {
